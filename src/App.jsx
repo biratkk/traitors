@@ -21,6 +21,8 @@ function App() {
   const audioRef = useRef(null)
   const effectsRef = useRef(new Map())
   const fadingRef = useRef(new Set())
+  const audioContextRef = useRef(null)
+  const audioNodesRef = useRef(new WeakMap())
   const holdTimer = useRef(null)
   const heldLabel = useRef(null)
   const suppressClick = useRef(false)
@@ -46,31 +48,33 @@ function App() {
     if (!fade || element.paused || element.ended) {
       element.pause()
       element.currentTime = 0
+      audioNodesRef.current.get(element)?.source.disconnect()
       return
     }
-    const fading = { element, frame: null }
+    const nodes = audioNodesRef.current.get(element)
+    const fading = { element, timer: null, source: nodes?.source }
     fadingRef.current.add(fading)
-    const start = performance.now()
-    const volume = element.volume
-    function fadeOut(now) {
-      const progress = Math.min((now - start) / 1000, 1)
-      element.volume = volume * (1 - progress)
-      if (progress < 1 && !element.ended) fading.frame = requestAnimationFrame(fadeOut)
-      else {
-        element.pause()
-        element.currentTime = 0
-        fadingRef.current.delete(fading)
-      }
+    if (nodes) {
+      const now = nodes.context.currentTime
+      nodes.gain.gain.cancelScheduledValues(now)
+      nodes.gain.gain.setValueAtTime(nodes.gain.gain.value, now)
+      nodes.gain.gain.linearRampToValueAtTime(0, now + 1)
     }
-    fading.frame = requestAnimationFrame(fadeOut)
+    fading.timer = setTimeout(() => {
+      element.pause()
+      element.currentTime = 0
+      fading.source?.disconnect()
+      fadingRef.current.delete(fading)
+    }, nodes ? 1000 : 0)
   }
   function stopAudio() {
     stopNarration()
     for (const label of effectsRef.current.keys()) stopEffect(label)
     for (const fading of fadingRef.current) {
-      cancelAnimationFrame(fading.frame)
+      clearTimeout(fading.timer)
       fading.element.pause()
       fading.element.currentTime = 0
+      fading.source?.disconnect()
     }
     fadingRef.current.clear()
   }
@@ -82,10 +86,13 @@ function App() {
     }
     effectsRef.current.clear()
     for (const fading of fadingRef.current) {
-      cancelAnimationFrame(fading.frame)
+      clearTimeout(fading.timer)
       fading.element.pause()
+      fading.source?.disconnect()
     }
     fadingRef.current.clear()
+    audioContextRef.current?.close()
+    audioContextRef.current = null
     const audio = audioRef.current
     if (audio) {
       if (audio.element) { audio.element.onended = null; audio.element.pause() }
@@ -141,6 +148,19 @@ function App() {
       if (effectsRef.current.has(label)) { stopEffect(label, true); return }
       const element = new Audio(`${import.meta.env.BASE_URL}${soundFile.replace(/^\//, '')}`)
       element.loop = repeat
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext
+        if (AudioContext) {
+          const context = audioContextRef.current || new AudioContext()
+          audioContextRef.current = context
+          const source = context.createMediaElementSource(element)
+          const gain = context.createGain()
+          source.connect(gain)
+          gain.connect(context.destination)
+          audioNodesRef.current.set(element, { context, source, gain })
+          if (context.state === 'suspended') context.resume().catch(() => {})
+        }
+      } catch { /* Playback still works without a fade if Web Audio is unavailable. */ }
       effectsRef.current.set(label, element)
       setPlayingEffects(current => [...current, label])
       element.onended = () => { if (effectsRef.current.get(label) === element) stopEffect(label) }
