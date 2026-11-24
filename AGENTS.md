@@ -5,7 +5,7 @@
 - Read `README.md`, `docs/GLOSSARY.md`, and the relevant code before changing behavior.
 - Treat `docs/GOAL.md` as the original brief. It describes planned features as well as current behavior.
 - Keep the host a non-player. Do not expose secret roles to the host when those roles are implemented.
-- Do not claim that multiplayer, private roles, voting, or personalized narration already works.
+- Keep documentation accurate about the current multiplayer features and their limits. Personalized narration is not implemented.
 - Keep audio files local to the app. Test offline behavior on the target device before promising it works.
 - Keep controls usable on a tablet. Preserve keyboard access and clear labels.
 - Do not overwrite player work or delete files outside the requested change.
@@ -17,7 +17,7 @@
 - Remove duplication when it makes a change easier to understand. Do not build abstractions for hypothetical requirements.
 - Handle errors at the point where the user can act on them. Do not hide failures behind success messages.
 - Test behavior rather than implementation details where practical. Run `npm run lint` and `npm test` before committing changes.
-- Keep tests independent and deterministic. The end-to-end suite uses a production build with no sample players.
+- Keep tests independent. Multiplayer tests use a dedicated Supabase project and remove their own rooms. The legacy dashboard tests use an isolated test build.
 
 ## Writing
 
