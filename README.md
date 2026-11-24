@@ -1,6 +1,6 @@
 # The Traitors Dashboard
 
-![The host dashboard with game controls and sample players](docs/home.png)
+![The host dashboard with game controls and sample players](public/home.png)
 
 A tablet dashboard for the host of a Traitors-style party game. The host runs the game but does not play. This version runs on one device. Bring your own accusations.
 
