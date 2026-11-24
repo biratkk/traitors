@@ -17,21 +17,35 @@ export default defineConfig({
         background_color: '#151820',
         display: 'standalone',
         icons: [
-          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          {
+            src: 'icons/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'icons/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
         ],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
-        runtimeCaching: [{
-          urlPattern: ({ url }) => url.origin === self.location.origin && url.pathname.includes('/sounds/'),
-          handler: 'CacheFirst',
-          options: {
-            cacheName: 'traitors-sounds',
-            cacheableResponse: { statuses: [200] },
-            rangeRequests: true,
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) =>
+              url.origin === self.location.origin &&
+              url.pathname.includes('/sounds/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'traitors-sounds',
+              cacheableResponse: { statuses: [200] },
+              rangeRequests: true,
+            },
           },
-        }],
+        ],
       },
     }),
   ],
