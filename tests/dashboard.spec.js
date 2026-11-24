@@ -118,3 +118,35 @@ test('serves an installable manifest and sound files', async ({ page, request })
     expect(response.ok(), url).toBeTruthy()
   }
 })
+
+test('loops a day transition and stops it independently', async ({ page }) => {
+  await page.getByRole('button', { name: 'Sounds' }).click()
+  const button = page.getByRole('button', { name: 'Night falls', exact: true })
+  const box = await button.boundingBox()
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+  await page.mouse.down()
+  await expect(page.getByRole('button', { name: 'Night falls, looping' })).toHaveAttribute('aria-pressed', 'true')
+  await page.mouse.up()
+  await expect.poll(() => page.evaluate(() => window.testAudio[0]?.loop)).toBe(true)
+  await page.getByRole('button', { name: 'Night falls, looping' }).click()
+  await expect(button).toHaveAttribute('aria-pressed', 'false')
+  await expect.poll(() => page.evaluate(() => window.testAudio[0].paused)).toBe(true)
+})
+
+test('clears a sound after it finishes', async ({ page }) => {
+  await page.getByRole('button', { name: 'Sounds' }).click()
+  const gasp = page.getByRole('button', { name: 'Gasp', exact: true })
+  await gasp.click()
+  await expect(gasp).toHaveAttribute('aria-pressed', 'true')
+  await expect(gasp).toHaveAttribute('aria-pressed', 'false', { timeout: 15_000 })
+})
+
+test('fits sixteen player indicators on a tablet', async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 768 })
+  for (let i = 1; i <= 16; i++) await addPlayer(page, `Player ${i}`)
+  const players = page.locator('.home-players')
+  await expect(players.locator('.home-player')).toHaveCount(16)
+  const bounds = await players.evaluate(element => ({ scroll: element.scrollHeight, client: element.clientHeight }))
+  expect(bounds.scroll).toBeLessThanOrEqual(bounds.client + 1)
+  await expect(players.getByText('Player 16', { exact: true })).toBeVisible()
+})
