@@ -32,6 +32,12 @@ npm run lint     # Run Oxlint
 
 You can play several effects at the same time. Connect the tablet to a speaker through its Bluetooth settings. The audio files are bundled with the app, so playback does not need a network connection after the files load.
 
+## Install on a tablet
+
+Open the deployed site over HTTPS. In Firefox or Chrome on Android, open the browser menu and select “Install” or “Add to Home screen.” On an iPad, open the site in Safari, tap Share, and select “Add to Home Screen.”
+
+Open the installed app once while online to cache the dashboard. Sound files are cached as they are requested, rather than downloaded all at once. Test each sound offline on the tablet before the game. The installed app still stores player state only in memory.
+
 ## What is in the box?
 
 | Path | Purpose |
