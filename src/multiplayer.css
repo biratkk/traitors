@@ -1,0 +1,219 @@
+.entry-screen,
+.player-screen {
+  min-height: 100dvh;
+  padding: 16px;
+  max-width: 1100px;
+  margin: auto;
+}
+.entry-screen h1,
+.player-summary h1 {
+  font-size: clamp(28px, 5vw, 48px);
+  margin: 16px 0;
+}
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.role-card {
+  border: 0;
+  border-radius: 10px;
+  min-height: 260px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  color: #151820;
+  font-size: 28px;
+  font-weight: 800;
+}
+.role-card svg {
+  width: 34px;
+  height: 34px;
+}
+.role-host {
+  background: #c3a0fa;
+}
+.role-tv {
+  background: #79bdf5;
+}
+.role-player {
+  background: #8fd4a2;
+}
+.join-form {
+  display: grid;
+  gap: 12px;
+  max-width: 520px;
+}
+.join-form h1,
+.join-form p {
+  margin: 10px 0;
+}
+.join-form label {
+  font-weight: 700;
+}
+.join-form input,
+.game-actions input {
+  border: 2px solid #58667c;
+  border-radius: 8px;
+  background: #252b38;
+  color: white;
+  padding: 12px;
+  font-size: 18px;
+}
+.join-submit,
+.player-top button,
+.game-header button,
+.game-actions button {
+  border: 0;
+  border-radius: 8px;
+  background: #79bdf5;
+  color: #151820;
+  font-weight: 700;
+  padding: 12px;
+  min-height: 48px;
+}
+.join-submit:disabled {
+  opacity: 0.5;
+}
+.game-error {
+  color: #ffd0cc;
+  background: #673a40;
+  border-radius: 8px;
+  padding: 10px;
+}
+.game-controls {
+  display: grid;
+  gap: 8px;
+  flex: none;
+}
+.game-header,
+.game-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  background: #252e3d;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+.game-header strong {
+  color: #ffc85a;
+}
+.game-header button {
+  margin-left: auto;
+}
+.game-actions label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.game-actions input {
+  width: 65px;
+  padding: 6px;
+}
+.game-actions button {
+  min-height: 38px;
+  padding: 8px 12px;
+}
+.game-results {
+  background: #3c526b;
+  border-radius: 8px;
+  padding: 10px;
+}
+.connection-online {
+  background: #285c46 !important;
+  color: #aaf3c9 !important;
+}
+.connection-offline {
+  background: #673a40 !important;
+  color: #ffd0cc !important;
+}
+.player-screen {
+  max-width: 700px;
+}
+.player-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+}
+.player-summary {
+  background: #3c526b;
+  border-radius: 10px;
+  margin-top: 12px;
+  padding: 16px;
+}
+.player-summary h1 {
+  margin: 0 0 12px;
+}
+.player-summary p {
+  margin: 6px 0;
+}
+.player-instruction {
+  background: #ffc85a;
+  color: #151820;
+  padding: 18px;
+  border-radius: 10px;
+  margin-top: 12px;
+  font-weight: 800;
+  font-size: 20px;
+}
+.player-targets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.player-targets button {
+  border: 0;
+  border-radius: 10px;
+  padding: 18px;
+  min-height: 80px;
+  text-align: left;
+  font-size: 20px;
+  font-weight: 700;
+  color: #151820;
+}
+.player-targets button:disabled {
+  opacity: 0.55;
+}
+.home-view .home-player {
+  min-width: 0;
+}
+.home-view .home-player small {
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .entry-screen,
+  .player-screen {
+    padding: 12px;
+  }
+  .role-grid {
+    grid-template-columns: 1fr;
+  }
+  .role-card {
+    min-height: 110px;
+    flex-direction: row;
+    align-items: center;
+  }
+  .game-header,
+  .game-actions {
+    gap: 6px;
+    font-size: 12px;
+  }
+  .game-actions button {
+    font-size: 12px;
+  }
+  .home-view .home-player {
+    font-size: 10px;
+    gap: 3px;
+  }
+  .home-view .home-player small {
+    font-size: 8px;
+  }
+  .home-view .player-initial {
+    display: none;
+  }
+}
