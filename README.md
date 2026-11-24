@@ -57,7 +57,7 @@ Open the installed app once while online to cache the dashboard. The browser cac
 | `public/sounds/` | Bundled audio and source credits |
 | `tests/` | End-to-end tests |
 | `docs/GLOSSARY.md` | Game and application terms |
-| `GOAL.md` | Original game brief and planned flow |
+| `docs/GOAL.md` | Original game brief and planned flow |
 
 The app uses React, Vite, and Lucide icons. Sound effects come from Mixkit. See `public/sounds/CREDITS.md` for the license link and credits.
 
@@ -65,4 +65,4 @@ The app uses React, Vite, and Lucide icons. Sound effects come from Mixkit. See 
 
 Player names and statuses live in memory and reset when the page reloads. Kill and banishment narration uses a placeholder tone. The Missions view is empty.
 
-Phone joining, private roles, realtime sync, traitor voting, win checks, and personalized narration are planned but not connected. See `GOAL.md` for the original brief.
+Phone joining, private roles, realtime sync, traitor voting, win checks, and personalized narration are planned but not connected. See `docs/GOAL.md` for the original brief.
