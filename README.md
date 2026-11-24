@@ -66,3 +66,7 @@ The app uses React, Vite, and Lucide icons. Sound effects come from Mixkit. See 
 Player names and statuses live in memory and reset when the page reloads. Kill and banishment narration uses a placeholder tone. The Missions view is empty.
 
 Phone joining, private roles, realtime sync, traitor voting, win checks, and personalized narration are planned but not connected. See `docs/GOAL.md` for the original brief.
+
+## Version 2 development
+
+Version 2 uses a dedicated Supabase project for shared game state. Copy `.env.example` to `.env.local` and set the project URL and publishable key. Never put a service-role key in a `VITE_` variable. The multiplayer screens and database migration are still in development.
