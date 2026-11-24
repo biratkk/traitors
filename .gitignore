@@ -26,3 +26,6 @@ dist-ssr
 # End-to-end test output
 /test-results/
 /playwright-report/
+
+# Supabase local configuration
+supabase/.temp/
