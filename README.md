@@ -1,5 +1,7 @@
 # The Traitors Dashboard
 
+![The host dashboard with game controls and sample players](docs/home.png)
+
 A control room for a weekend of suspicion, secrets, and suspiciously well-timed sound effects.
 
 This is a tablet-first dashboard for the host of a Traitors-style party game. The host runs the show, but does not play. For now, the app is a single-device prototype. Bring your own accusations.
