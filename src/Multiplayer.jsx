@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowLeft, Monitor, Users, Crown } from 'lucide-react'
-import App from './App.jsx'
+import { HostView, PlayerView, TVView } from './GameViews.jsx'
 import { supabase } from './lib/supabase.js'
 import './multiplayer.css'
 
@@ -140,197 +140,6 @@ function Entry({ onJoin }) {
   )
 }
 
-function GameControls({ session, game, connection, command, leave }) {
-  const [count, setCount] = useState(2)
-  const [error, setError] = useState('')
-  async function run(action, value) {
-    setError('')
-    try {
-      await command(action, value)
-    } catch (err) {
-      setError(err.message)
-    }
-  }
-  return (
-    <div className="game-controls">
-      <div className="game-header">
-        <span>
-          {connection === 'connected' ? 'Connected' : 'Reconnecting...'}
-        </span>
-        <span>Phase: {game.phase.replaceAll('_', ' ')}</span>
-        {session.kind === 'tv' && <strong>Room code: {session.code}</strong>}
-        <button onClick={leave}>Leave</button>
-      </div>
-      {game.phase === 'lobby' ? (
-        <div className="game-actions">
-          <label>
-            Traitors{' '}
-            <input
-              type="number"
-              min="1"
-              max="15"
-              value={count}
-              onChange={(event) => setCount(event.target.value)}
-            />
-          </label>
-          <button onClick={() => run('assign', String(count))}>
-            Assign roles
-          </button>
-          <span>Players join using the code on the TV.</span>
-        </div>
-      ) : (
-        <div className="game-actions">
-          <button onClick={() => run('day')}>Day</button>
-          <button onClick={() => run('vote')}>Start vote</button>
-          <button onClick={() => run('night')}>Start night</button>
-          <button onClick={() => run('mission')}>Mission</button>
-          {(game.phase === 'vote' || game.phase === 'night') && (
-            <span>
-              {game.received} / {game.eligible} choices locked
-            </span>
-          )}
-        </div>
-      )}
-      {game.phase === 'vote_result' && (
-        <div className="game-results">
-          Vote results:{' '}
-          {game.results
-            ?.map((result) => `${result.name} (${result.votes})`)
-            .join(', ')}
-          . Use Banish to mark the result.
-        </div>
-      )}
-      {game.phase === 'night_tie' && (
-        <div className="game-actions">
-          <span>Night vote tied. Choose a victim:</span>
-          {game.ties.map((player) => (
-            <button
-              key={player.id}
-              onClick={() => run('resolve_tie', player.id)}
-            >
-              {player.name}
-            </button>
-          ))}
-        </div>
-      )}
-      {error && (
-        <p className="game-error" role="alert">
-          {error}
-        </p>
-      )}
-    </div>
-  )
-}
-
-function PlayerView({ game, connection, vote, leave }) {
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-  const [roleVisible, setRoleVisible] = useState(false)
-  useEffect(() => {
-    function hideRole() {
-      if (document.hidden) setRoleVisible(false)
-    }
-    document.addEventListener('visibilitychange', hideRole)
-    return () => document.removeEventListener('visibilitychange', hideRole)
-  }, [])
-  const self = game.self
-  const isNightTraitor = game.phase === 'night' && self.role === 'traitor'
-  const canVote =
-    self.status === 'alive' &&
-    !game.voted &&
-    (game.phase === 'vote' || isNightTraitor)
-  const targets = game.players.filter(
-    (player) =>
-      player.status === 'alive' &&
-      player.id !== self.id &&
-      (!isNightTraitor || !game.fellowTraitors.includes(player.name)),
-  )
-  async function choose(id) {
-    setError('')
-    setBusy(true)
-    try {
-      await vote(id)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setBusy(false)
-    }
-  }
-  let instruction = 'Wait for the host to start the game.'
-  if (self.status !== 'alive')
-    instruction =
-      self.status === 'killed'
-        ? 'You have been killed.'
-        : 'You have been banished.'
-  else if (game.phase === 'mission')
-    instruction = 'Look at the TV for mission instructions.'
-  else if (game.phase === 'night_tie')
-    instruction = 'Wait for the host to resolve the night vote.'
-  else if (game.phase === 'night' && !isNightTraitor)
-    instruction = 'Night falls. Sleep tight.'
-  else if (game.voted)
-    instruction = 'Your choice is locked. Wait for the other players.'
-  else if (game.phase === 'vote')
-    instruction = 'Cast your vote. Your choice is final.'
-  else if (isNightTraitor)
-    instruction = 'Choose one victim. Your choice is final.'
-  else if (game.phase === 'vote_result')
-    instruction = 'Voting is complete. Look at the TV.'
-  else if (game.phase === 'day')
-    instruction = 'Look at the TV and wait for the host.'
-  return (
-    <main className="player-screen">
-      <div className="player-top">
-        <span>
-          {connection === 'connected' ? 'Connected' : 'Reconnecting...'}
-        </span>
-        <button onClick={leave}>Leave</button>
-      </div>
-      <div className="player-summary">
-        <h1>{self.name}</h1>
-        <p>Status: {self.status}</p>
-        {self.role && (
-          <button
-            className="role-toggle"
-            onClick={() => setRoleVisible((visible) => !visible)}
-            aria-expanded={roleVisible}
-          >
-            {roleVisible ? 'Hide my role' : 'Show my role'}
-          </button>
-        )}
-        {self.role && roleVisible && (
-          <p>Your role: {self.role === 'traitor' ? 'Traitor' : 'Faithful'}</p>
-        )}
-        {roleVisible && self.role === 'traitor' && game.fellowTraitors.length > 0 && (
-          <p>Other traitors: {game.fellowTraitors.join(', ')}</p>
-        )}
-      </div>
-      <div className="player-instruction" role="status">
-        {instruction}
-      </div>
-      {error && (
-        <p className="game-error" role="alert">
-          {error}
-        </p>
-      )}
-      {canVote && (
-        <div className="player-targets">
-          {targets.map((player, index) => (
-            <button
-              key={player.id}
-              className={`round-color-${index % 4}`}
-              disabled={busy || connection !== 'connected'}
-              onClick={() => choose(player.id)}
-            >
-              {player.name}
-            </button>
-          ))}
-        </div>
-      )}
-    </main>
-  )
-}
-
 export default function Multiplayer() {
   const [session, setSession] = useState(readSession)
   const [game, setGame] = useState(null)
@@ -348,7 +157,7 @@ export default function Multiplayer() {
     try {
       const result = await Promise.race([
         rpc(
-          'game_state',
+          'game2_state',
           {
             code_input: session.code,
             kind_input: session.kind,
@@ -365,7 +174,7 @@ export default function Multiplayer() {
         }),
       ])
       if (request === requestSequence.current) {
-        setGame(result)
+        setGame({ ...result, receivedAt: Date.now() })
         setConnection('connected')
         setError('')
       }
@@ -411,7 +220,7 @@ export default function Multiplayer() {
     setError('')
   }
   async function command(action, value = null) {
-    await rpc('game_command', {
+    await rpc('game2_command', {
       code_input: session.code,
       token_input: session.token,
       command_input: action,
@@ -420,7 +229,7 @@ export default function Multiplayer() {
     await refresh()
   }
   async function vote(target) {
-    await rpc('game_vote', {
+    await rpc('game2_vote', {
       code_input: session.code,
       name_input: session.name,
       target_input: target,
@@ -442,23 +251,41 @@ export default function Multiplayer() {
         </button>
       </main>
     )
+  async function chooseNight(target) {
+    await rpc('game2_night_choice', {
+      code_input: session.code,
+      name_input: session.name,
+      target_input: target,
+    })
+    await refresh()
+  }
+  async function lockNight() {
+    await rpc('game2_night_lock', {
+      code_input: session.code,
+      name_input: session.name,
+    })
+    await refresh()
+  }
+  async function reveal() {
+    await rpc('game2_reveal', {
+      code_input: session.code,
+      name_input: session.name,
+    })
+    await refresh()
+  }
   if (session.kind === 'player')
     return (
       <PlayerView
         game={game}
         connection={connection}
         vote={vote}
+        chooseNight={chooseNight}
+        lockNight={lockNight}
+        reveal={reveal}
         leave={leave}
       />
     )
-  const controls = (
-    <GameControls
-      session={session}
-      game={game}
-      connection={connection}
-      command={command}
-      leave={leave}
-    />
-  )
-  return <App multiplayer={{ game, command, controls }} />
+  if (session.kind === 'tv')
+    return <TVView game={game} session={session} connection={connection} />
+  return <HostView game={game} connection={connection} command={command} />
 }

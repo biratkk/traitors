@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 const url = process.env.VITE_SUPABASE_URL
 const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
-test('TV, host, and players share a game and recover their state', async ({
+test('TV, host and players share a game and recover their state', async ({
   browser,
 }) => {
   test.skip(!url || !key, 'Supabase test credentials are not configured')
@@ -29,6 +29,7 @@ test('TV, host, and players share a game and recover their state', async ({
     await tv.getByRole('button', { name: 'TV', exact: true }).click()
     await tv.getByRole('button', { name: 'Create game' }).click()
     await expect(tv.getByText(/Room code:/)).toBeVisible({ timeout: 15_000 })
+    await expect(tv.getByRole('button')).toHaveCount(0)
     session = await tv.evaluate(() =>
       JSON.parse(localStorage.getItem('traitors-v2-session')),
     )
@@ -36,9 +37,9 @@ test('TV, host, and players share a game and recover their state', async ({
     await host.getByRole('button', { name: 'Host', exact: true }).click()
     await host.getByLabel('Room code').fill(session.code)
     await host.getByRole('button', { name: 'Join game' }).click()
-    await expect(host.getByText('Phase: lobby')).toBeVisible({
-      timeout: 15_000,
-    })
+    await expect(
+      host.getByRole('button', { name: 'Assign roles' }),
+    ).toBeVisible({ timeout: 15_000 })
     await expect(host.getByText(/Room code:/)).toHaveCount(0)
     const players = []
     for (const name of ['Alice', 'Bob', 'Charlie', 'Dana']) {
@@ -48,40 +49,37 @@ test('TV, host, and players share a game and recover their state', async ({
       await page.getByLabel('Your name').fill(name)
       await page.getByRole('button', { name: 'Join game' }).click()
       await expect(
-        page.getByText('Wait for the host to start the game.'),
+        page.getByText('Look at the TV and wait for the host.'),
       ).toBeVisible({ timeout: 15_000 })
       players.push({ name, page })
     }
-    await expect(host.locator('.home-player')).toHaveCount(4, {
+    await expect(host.locator('.status-card')).toHaveCount(4, {
       timeout: 15_000,
     })
     await expect(
-      tv.locator('.home-player').filter({ hasText: 'Alice' }),
+      tv.locator('.status-card').filter({ hasText: 'Alice' }),
     ).toContainText('Connected')
     await host.getByRole('button', { name: 'Assign roles' }).click()
-    await expect(host.getByText('Phase: day')).toBeVisible({ timeout: 15_000 })
+    await expect(
+      host.getByRole('button', { name: 'Start next mission' }),
+    ).toBeVisible({ timeout: 15_000 })
     const traitors = []
-    const faithfuls = []
     for (const player of players) {
-      await player.page.getByRole('button', { name: 'Show my role' }).click({ timeout: 15_000 })
-      await expect(player.page.getByText(/Your role:/)).toBeVisible({
-        timeout: 15_000,
-      })
+      await player.page
+        .getByRole('button', { name: 'Show my role' })
+        .click({ timeout: 15_000 })
       const role = await player.page.getByText(/Your role:/).textContent()
-      ;(role.includes('Traitor') ? traitors : faithfuls).push(player)
+      if (role.includes('Traitor')) traitors.push(player)
     }
     expect(traitors).toHaveLength(2)
-    expect(faithfuls).toHaveLength(2)
     await expect(host.getByText(/Your role:/)).toHaveCount(0)
     await traitors[0].page.getByRole('button', { name: 'Hide my role' }).click()
     await expect(traitors[0].page.getByText(/Your role:/)).toHaveCount(0)
-    await traitors[0].page.getByRole('button', { name: 'Show my role' }).click()
     await traitors[0].page.reload()
-    await expect(traitors[0].page.getByText(/Your role:/)).toHaveCount(0)
-    await traitors[0].page.getByRole('button', { name: 'Show my role' }).click({ timeout: 15_000 })
-    await expect(traitors[0].page.getByText('Your role: Traitor')).toBeVisible({
-      timeout: 15_000,
-    })
+    await traitors[0].page
+      .getByRole('button', { name: 'Show my role' })
+      .click({ timeout: 15_000 })
+    await expect(traitors[0].page.getByText('Your role: Traitor')).toBeVisible()
     await traitors[0].page.context().setOffline(true)
     await expect(traitors[0].page.getByText('Reconnecting...')).toBeVisible({
       timeout: 15_000,
@@ -90,56 +88,30 @@ test('TV, host, and players share a game and recover their state', async ({
     await expect(
       traitors[0].page.getByText('Connected', { exact: true }),
     ).toBeVisible({ timeout: 15_000 })
-    await expect(traitors[0].page.getByText('Your role: Traitor')).toBeVisible()
-    await host.getByRole('button', { name: 'Start night' }).click()
-    await expect(
-      faithfuls[0].page.getByText('Night falls. Sleep tight.'),
-    ).toBeVisible({ timeout: 15_000 })
-    for (const [index, traitor] of traitors.entries()) {
-      await traitor.page
-        .getByRole('button', { name: faithfuls[index].name, exact: true })
-        .click({ timeout: 15_000 })
-    }
-    await expect(
-      host.getByText('Night vote tied. Choose a victim:'),
-    ).toBeVisible({ timeout: 15_000 })
-    await host
-      .getByRole('button', { name: faithfuls[0].name, exact: true })
-      .click()
-    await expect(
-      faithfuls[0].page.getByText('You have been killed.'),
-    ).toBeVisible({ timeout: 15_000 })
-    await expect(
-      tv.locator('.home-player').filter({ hasText: faithfuls[0].name }),
-    ).toContainText('Killed', { timeout: 15_000 })
     const recovered = await open()
     await recovered.getByRole('button', { name: 'Player', exact: true }).click()
     await recovered.getByLabel('Room code').fill(session.code)
-    await recovered.getByLabel('Your name').fill(faithfuls[0].name)
+    await recovered.getByLabel('Your name').fill(traitors[0].name)
     await recovered.getByRole('button', { name: 'Join game' }).click()
-    await expect(recovered.getByText('You have been killed.')).toBeVisible({
-      timeout: 15_000,
-    })
-    await host.getByRole('button', { name: 'Start vote' }).click()
-    const alive = [...traitors, faithfuls[1]]
-    for (let i = 0; i < alive.length; i++) {
-      await alive[i].page
-        .getByRole('button', {
-          name: alive[(i + 1) % alive.length].name,
-          exact: true,
-        })
-        .click({ timeout: 15_000 })
-    }
-    await expect(host.getByText(/Vote results:/)).toBeVisible({
-      timeout: 15_000,
-    })
-    await host.getByRole('button', { name: 'Mission', exact: true }).click()
+    await recovered
+      .getByRole('button', { name: 'Show my role' })
+      .click({ timeout: 15_000 })
+    await expect(recovered.getByText('Your role: Traitor')).toBeVisible()
+    await host.getByRole('button', { name: 'Start next mission' }).click()
     await expect(
-      faithfuls[1].page.getByText('Look at the TV for mission instructions.'),
+      tv.getByRole('heading', { name: 'Mission in progress' }),
     ).toBeVisible({ timeout: 15_000 })
-    await faithfuls[1].page.close()
+    await expect(tv.locator('.game-timer')).toBeVisible()
+    await host.getByRole('button', { name: 'Skip mission' }).click()
     await expect(
-      host.locator('.home-player').filter({ hasText: faithfuls[1].name }),
+      tv.getByRole('heading', { name: 'The round table' }),
+    ).toBeVisible({ timeout: 15_000 })
+    await expect(host.getByRole('button')).toHaveCount(0)
+    await expect(tv.getByRole('button')).toHaveCount(0)
+    const disconnectedPlayer = players.find((player) => player.name !== traitors[0].name)
+    await disconnectedPlayer.page.close()
+    await expect(
+      host.locator('.status-card').filter({ hasText: disconnectedPlayer.name }),
     ).toContainText('Disconnected', { timeout: 45_000 })
   } finally {
     const cleanup = session

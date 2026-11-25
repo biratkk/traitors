@@ -217,4 +217,232 @@
     display: none;
   }
 }
-.role-toggle{border:0;border-radius:8px;background:#c3a0fa;color:#151820;font-weight:700;padding:10px 14px;min-height:44px}
+.role-toggle {
+  border: 0;
+  border-radius: 8px;
+  background: #c3a0fa;
+  color: #151820;
+  font-weight: 700;
+  padding: 10px 14px;
+  min-height: 44px;
+}
+.tv-view,
+.host-screen {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  background: #151820;
+  color: #fff;
+}
+.tv-view {
+  grid-template-columns: minmax(0, 4fr) minmax(0, 1fr);
+}
+.tv-prompt {
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 24px;
+}
+.tv-meta {
+  font-size: clamp(12px, 1.5vw, 20px);
+  color: #c7cbd1;
+}
+.tv-meta strong {
+  color: #fff;
+}
+.tv-message {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.tv-message h1 {
+  font-size: clamp(30px, 5vw, 76px);
+  margin: 0 0 20px;
+  overflow-wrap: anywhere;
+}
+.tv-message p {
+  max-width: 900px;
+  font-size: clamp(18px, 2.5vw, 36px);
+  line-height: 1.35;
+}
+.game-timer {
+  font-size: clamp(42px, 8vw, 100px);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  margin-top: 20px;
+}
+.tv-players,
+.host-players {
+  min-width: 0;
+  min-height: 0;
+  padding: 8px;
+}
+.status-list {
+  height: 100%;
+  display: grid;
+  grid-template-rows: repeat(16, minmax(0, 1fr));
+  gap: 4px;
+  overflow: auto;
+}
+.status-card {
+  border-radius: 6px;
+  min-width: 0;
+  padding: 3px 6px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: center;
+  column-gap: 4px;
+  font-size: clamp(9px, 1vw, 14px);
+}
+.status-card strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.status-card span,
+.status-card small {
+  white-space: nowrap;
+}
+.status-card small {
+  grid-column: 1 / -1;
+  font-size: 0.8em;
+}
+.status-alive-card {
+  background: #29483b;
+}
+.status-out-card {
+  background: #383d46;
+}
+.host-screen {
+  grid-template-rows: auto minmax(0, 1fr);
+  padding: 8px;
+}
+.host-header {
+  padding: 8px;
+  color: #c7cbd1;
+}
+.host-content {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 1fr);
+  gap: 8px;
+  min-height: 0;
+}
+.host-main {
+  background: #252e3d;
+  border-radius: 10px;
+  padding: 24px;
+  min-width: 0;
+  overflow: auto;
+}
+.host-main h1 {
+  font-size: clamp(28px, 4vw, 50px);
+  margin: 0 0 16px;
+}
+.host-main p {
+  font-size: 18px;
+  line-height: 1.4;
+}
+.host-primary,
+.host-setup button,
+.private-prompt button,
+.night-choices button {
+  border: 0;
+  border-radius: 10px;
+  padding: 18px;
+  background: #8fd4a2;
+  color: #151820;
+  font-weight: 800;
+  font-size: 20px;
+  min-height: 64px;
+}
+.host-primary {
+  width: 100%;
+  margin-top: 20px;
+}
+.host-primary:disabled,
+.host-setup button:disabled,
+.private-prompt button:disabled,
+.night-choices button:disabled {
+  opacity: 0.5;
+}
+.host-setup {
+  display: grid;
+  gap: 12px;
+  max-width: 400px;
+}
+.host-setup label {
+  display: grid;
+  gap: 8px;
+  font-weight: 700;
+}
+.host-setup input {
+  background: #151820;
+  color: #fff;
+  border: 1px solid #78889d;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 20px;
+}
+.night-start {
+  background: #79bdf5;
+}
+.private-prompt,
+.night-choices {
+  background: #3c526b;
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 12px;
+}
+.private-prompt p,
+.night-choices p {
+  line-height: 1.4;
+}
+.night-choices h2 {
+  margin: 0;
+}
+.player-targets button[aria-pressed='true'] {
+  outline: 4px solid #fff;
+  outline-offset: -4px;
+}
+.night-choices button {
+  background: #c3a0fa;
+  width: 100%;
+  font-size: 16px;
+  min-height: 48px;
+  padding: 10px;
+}
+.private-prompt button {
+  width: 100%;
+  background: #ffc85a;
+}
+@media (max-width: 600px) {
+  .tv-prompt {
+    padding: 10px;
+  }
+  .tv-players,
+  .host-players {
+    padding: 4px;
+  }
+  .status-list {
+    gap: 2px;
+  }
+  .status-card {
+    padding: 2px;
+    font-size: 9px;
+  }
+  .host-main {
+    padding: 12px;
+  }
+  .host-main p {
+    font-size: 14px;
+  }
+  .tv-message p {
+    font-size: 16px;
+  }
+}

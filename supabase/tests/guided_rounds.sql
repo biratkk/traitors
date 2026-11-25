@@ -49,6 +49,17 @@ begin
   perform public.game2_vote(room_code, 'Bob', a);
   perform public.game2_vote(room_code, 'Charlie', a);
   perform public.game2_vote(room_code, 'Dana', a);
+  perform public.game2_vote(room_code, 'Eve', b);
+  perform public.game2_vote(room_code, 'Frank', b);
+  state := public.game2_state(room_code, 'tv', null, tv_key);
+  if state->>'phase' <> 'defense' then raise exception 'A tied revote did not restart defenses'; end if;
+  update public.game_rooms set phase_ends_at = now() - interval '3 minutes' where id = test_room_id;
+  state := public.game2_state(room_code, 'tv', null, tv_key);
+  if state->>'phase' <> 'revote' then raise exception 'Repeated defenses did not advance to revote'; end if;
+  perform public.game2_vote(room_code, 'Alice', b);
+  perform public.game2_vote(room_code, 'Bob', a);
+  perform public.game2_vote(room_code, 'Charlie', a);
+  perform public.game2_vote(room_code, 'Dana', a);
   perform public.game2_vote(room_code, 'Eve', a);
   perform public.game2_vote(room_code, 'Frank', b);
   state := public.game2_state(room_code, 'player', 'Alice');

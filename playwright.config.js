@@ -27,7 +27,7 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     {
       name: 'firefox',
-      testMatch: 'multiplayer.spec.js',
+      testMatch: ['multiplayer.spec.js', 'guided-ui.spec.js', 'audio-assets.spec.js'],
       use: { ...devices['Desktop Firefox'] },
     },
   ],
