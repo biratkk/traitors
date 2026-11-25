@@ -21,9 +21,8 @@ test('TV, host and players share a game and recover their state', async ({
     return page
   }
   try {
-    const privateTable = await createClient(url, key)
-      .from('game_players')
-      .select('*')
+    const client = createClient(url, key)
+    const privateTable = await client.from('game_players').select('*')
     expect(privateTable.error).not.toBeNull()
     const tv = await open()
     await tv.getByRole('button', { name: 'TV', exact: true }).click()
@@ -41,6 +40,23 @@ test('TV, host and players share a game and recover their state', async ({
       host.getByRole('button', { name: 'Assign roles' }),
     ).toBeVisible({ timeout: 15_000 })
     await expect(host.getByText(/Room code:/)).toHaveCount(0)
+    const hostSession = await host.evaluate(() =>
+      JSON.parse(localStorage.getItem('traitors-v2-session')),
+    )
+    const legacyAction = await client.rpc('game_command', {
+      code_input: session.code,
+      token_input: hostSession.token,
+      command_input: 'day',
+      value_input: null,
+    })
+    expect(legacyAction.error).not.toBeNull()
+    const tvAction = await client.rpc('game2_command', {
+      code_input: session.code,
+      token_input: session.token,
+      command_input: 'assign',
+      value_input: '2',
+    })
+    expect(tvAction.error).not.toBeNull()
     const players = []
     for (const name of ['Alice', 'Bob', 'Charlie', 'Dana']) {
       const page = await open()
@@ -63,6 +79,13 @@ test('TV, host and players share a game and recover their state', async ({
     await expect(
       host.getByRole('button', { name: 'Start next mission' }),
     ).toBeVisible({ timeout: 15_000 })
+    const prematureNight = await client.rpc('game2_command', {
+      code_input: session.code,
+      token_input: hostSession.token,
+      command_input: 'start_night',
+      value_input: null,
+    })
+    expect(prematureNight.error).not.toBeNull()
     const traitors = []
     for (const player of players) {
       await player.page
