@@ -37,7 +37,7 @@ GitHub Actions runs lint and tests on pushes and pull requests. Multiplayer test
 1. On the TV, choose TV and create a game. The TV displays the room code.
 2. On the host device, choose Host and join with the code. Players choose Player and join with the code and their names.
 3. The host assigns roles and starts a mission. Players can show or hide their roles on their phones.
-4. The mission lasts five minutes. The host can skip it. The round-table discussion then lasts five minutes.
+4. The mission lasts five minutes. The host can skip it. When the mission ends, the host starts the five-minute round-table discussion.
 5. Players vote on their phones. If the vote ties, each tied player gets one minute to speak, followed by a revote. Further ties repeat this process.
 6. The chosen player stands and reads a private prompt on their phone. They reveal their role on the TV when ready.
 7. Connect the host device to the speaker and choose "Let the night begin". Everyone puts on a blindfold. Once everyone is covered, traitors can uncover their eyes.

@@ -27,6 +27,7 @@ This glossary defines terms used in the dashboard and the game brief. Planned fe
 | Start of day | The sound played to begin the day. |
 | Night falls | The sound played to begin the night. |
 | Mission | A five-minute phase for an activity. The host supplies the activity instructions. |
+| Mission complete | The pause after a mission ends. The host starts the round table when everyone is ready. |
 | Finale | The planned end of the game after a win check. |
 
 ## App and audio
