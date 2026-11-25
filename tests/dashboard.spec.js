@@ -18,7 +18,7 @@ test.beforeEach(async ({ page }) => {
       return audio
     }
   })
-  await page.goto('/')
+  await page.goto('/?local-preview=1')
 })
 
 test('adds players and rejects duplicate names', async ({ page }) => {
@@ -28,27 +28,44 @@ test('adds players and rejects duplicate names', async ({ page }) => {
   await expect(page.locator('.home-player')).toContainText('Alive')
   await page.getByRole('button', { name: 'Add player' }).click()
   await page.getByLabel('Player name').fill('  alice  ')
-  await page.getByRole('dialog').getByRole('button', { name: 'Add player' }).click()
-  await expect(page.getByRole('button', { name: /Enter a unique player name/ })).toBeVisible()
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Add player' })
+    .click()
+  await expect(
+    page.getByRole('button', { name: /Enter a unique player name/ }),
+  ).toBeVisible()
   await expect(page.getByRole('dialog')).toBeVisible()
   await page.getByRole('button', { name: 'Close' }).click()
   await expect(page.locator('.home-player')).toHaveCount(1)
 })
 
-test('kills and banishes players, and disables players who are out', async ({ page }) => {
+test('kills and banishes players, and disables players who are out', async ({
+  page,
+}) => {
   await addPlayer(page, 'Alice')
   await addPlayer(page, 'Bob')
   await page.getByRole('button', { name: 'Kill', exact: true }).click()
   await page.getByRole('button', { name: 'Alice' }).click()
-  await expect(page.getByRole('button', { name: 'Alice Killed' })).toBeDisabled()
+  await expect(
+    page.getByRole('button', { name: 'Alice Killed' }),
+  ).toBeDisabled()
   await page.getByRole('button', { name: 'Back' }).click()
-  await expect(page.locator('.home-player').filter({ hasText: 'Alice' })).toContainText('Killed')
+  await expect(
+    page.locator('.home-player').filter({ hasText: 'Alice' }),
+  ).toContainText('Killed')
   await page.getByRole('button', { name: 'Banish', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Alice Killed' })).toBeDisabled()
+  await expect(
+    page.getByRole('button', { name: 'Alice Killed' }),
+  ).toBeDisabled()
   await page.getByRole('button', { name: 'Bob' }).click()
-  await expect(page.getByRole('button', { name: 'Bob Banished' })).toBeDisabled()
+  await expect(
+    page.getByRole('button', { name: 'Bob Banished' }),
+  ).toBeDisabled()
   await page.getByRole('button', { name: 'Back' }).click()
-  await expect(page.locator('.home-player').filter({ hasText: 'Bob' })).toContainText('Banished')
+  await expect(
+    page.locator('.home-player').filter({ hasText: 'Bob' }),
+  ).toContainText('Banished')
 })
 
 test('opens missions and returns home', async ({ page }) => {
@@ -58,7 +75,9 @@ test('opens missions and returns home', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Missions' })).toBeVisible()
 })
 
-test('plays multiple effects, shows progress, fades an effect, and stops all', async ({ page }) => {
+test('plays multiple effects, shows progress, fades an effect, and stops all', async ({
+  page,
+}) => {
   await page.getByRole('button', { name: 'Sounds' }).click()
   const thunder = page.getByRole('button', { name: 'Thunder', exact: true })
   const wind = page.getByRole('button', { name: 'Wind howling', exact: true })
@@ -66,16 +85,26 @@ test('plays multiple effects, shows progress, fades an effect, and stops all', a
   await wind.click()
   await expect(thunder).toHaveAttribute('aria-pressed', 'true')
   await expect(wind).toHaveAttribute('aria-pressed', 'true')
-  await expect.poll(() => page.evaluate(() => window.testAudio.filter(a => !a.paused).length)).toBe(2)
-  await expect.poll(() => page.evaluate(() => window.testAudio[0].currentTime)).toBeGreaterThan(0)
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.testAudio.filter((a) => !a.paused).length),
+    )
+    .toBe(2)
+  await expect
+    .poll(() => page.evaluate(() => window.testAudio[0].currentTime))
+    .toBeGreaterThan(0)
   await expect(thunder.locator('.playback-progress')).toBeVisible()
   await thunder.click()
   await expect(thunder).toHaveAttribute('aria-pressed', 'false')
-  await expect.poll(() => page.evaluate(() => window.testAudio[0].paused)).toBe(true)
+  await expect
+    .poll(() => page.evaluate(() => window.testAudio[0].paused))
+    .toBe(true)
   await expect(wind).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('button', { name: 'Stop all' }).click()
   await expect(wind).toHaveAttribute('aria-pressed', 'false')
-  await expect.poll(() => page.evaluate(() => window.testAudio.every(a => a.paused))).toBe(true)
+  await expect
+    .poll(() => page.evaluate(() => window.testAudio.every((a) => a.paused)))
+    .toBe(true)
 })
 
 test('holds an effect to loop and taps it to stop', async ({ page }) => {
@@ -85,13 +114,19 @@ test('holds an effect to loop and taps it to stop', async ({ page }) => {
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
   await page.mouse.down()
   await expect(effect.locator('.hold-progress')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Gong, looping' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(
+    page.getByRole('button', { name: 'Gong, looping' }),
+  ).toHaveAttribute('aria-pressed', 'true')
   await page.mouse.up()
   const looping = page.getByRole('button', { name: 'Gong, looping' })
-  await expect.poll(() => page.evaluate(() => window.testAudio[0]?.loop)).toBe(true)
+  await expect
+    .poll(() => page.evaluate(() => window.testAudio[0]?.loop))
+    .toBe(true)
   await looping.click()
   await expect(effect).toHaveAttribute('aria-pressed', 'false')
-  await expect.poll(() => page.evaluate(() => window.testAudio[0].paused)).toBe(true)
+  await expect
+    .poll(() => page.evaluate(() => window.testAudio[0].paused))
+    .toBe(true)
 })
 
 test('plays and stops the day transitions', async ({ page }) => {
@@ -103,16 +138,26 @@ test('plays and stops the day transitions', async ({ page }) => {
     await expect(button.locator('.playback-progress')).toBeVisible()
   }
   await page.getByRole('button', { name: 'Stop all' }).click()
-  await expect.poll(() => page.evaluate(() => window.testAudio.every(a => a.paused))).toBe(true)
+  await expect
+    .poll(() => page.evaluate(() => window.testAudio.every((a) => a.paused)))
+    .toBe(true)
 })
 
-test('serves an installable manifest and sound files', async ({ page, request }) => {
-  const manifestUrl = await page.locator('link[rel="manifest"]').getAttribute('href')
+test('serves an installable manifest and sound files', async ({
+  page,
+  request,
+}) => {
+  const manifestUrl = await page
+    .locator('link[rel="manifest"]')
+    .getAttribute('href')
   const manifest = await (await request.get(manifestUrl)).json()
   expect(manifest.name).toBe('The Traitors Dashboard')
   expect(manifest.display).toBe('standalone')
-  for (const icon of manifest.icons) expect((await request.get(icon.src)).ok()).toBeTruthy()
-  const sounds = (await import('../src/sounds.json', { with: { type: 'json' } })).default
+  for (const icon of manifest.icons)
+    expect((await request.get(icon.src)).ok()).toBeTruthy()
+  const sounds = (
+    await import('../src/sounds.json', { with: { type: 'json' } })
+  ).default
   for (const url of Object.values(sounds)) {
     const response = await request.head(url)
     expect(response.ok(), url).toBeTruthy()
@@ -125,12 +170,18 @@ test('loops a day transition and stops it independently', async ({ page }) => {
   const box = await button.boundingBox()
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
   await page.mouse.down()
-  await expect(page.getByRole('button', { name: 'Night falls, looping' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(
+    page.getByRole('button', { name: 'Night falls, looping' }),
+  ).toHaveAttribute('aria-pressed', 'true')
   await page.mouse.up()
-  await expect.poll(() => page.evaluate(() => window.testAudio[0]?.loop)).toBe(true)
+  await expect
+    .poll(() => page.evaluate(() => window.testAudio[0]?.loop))
+    .toBe(true)
   await page.getByRole('button', { name: 'Night falls, looping' }).click()
   await expect(button).toHaveAttribute('aria-pressed', 'false')
-  await expect.poll(() => page.evaluate(() => window.testAudio[0].paused)).toBe(true)
+  await expect
+    .poll(() => page.evaluate(() => window.testAudio[0].paused))
+    .toBe(true)
 })
 
 test('clears a sound after it finishes', async ({ page }) => {
@@ -138,7 +189,9 @@ test('clears a sound after it finishes', async ({ page }) => {
   const gasp = page.getByRole('button', { name: 'Gasp', exact: true })
   await gasp.click()
   await expect(gasp).toHaveAttribute('aria-pressed', 'true')
-  await expect(gasp).toHaveAttribute('aria-pressed', 'false', { timeout: 15_000 })
+  await expect(gasp).toHaveAttribute('aria-pressed', 'false', {
+    timeout: 15_000,
+  })
 })
 
 test('fits sixteen player indicators on a tablet', async ({ page }) => {
@@ -146,7 +199,25 @@ test('fits sixteen player indicators on a tablet', async ({ page }) => {
   for (let i = 1; i <= 16; i++) await addPlayer(page, `Player ${i}`)
   const players = page.locator('.home-players')
   await expect(players.locator('.home-player')).toHaveCount(16)
-  const bounds = await players.evaluate(element => ({ scroll: element.scrollHeight, client: element.clientHeight }))
+  const bounds = await players.evaluate((element) => ({
+    scroll: element.scrollHeight,
+    client: element.clientHeight,
+  }))
   expect(bounds.scroll).toBeLessThanOrEqual(bounds.client + 1)
   await expect(players.getByText('Player 16', { exact: true })).toBeVisible()
+})
+
+test('holds the space bar to loop an effect', async ({ page }) => {
+  await page.getByRole('button', { name: 'Sounds' }).click()
+  const effect = page.getByRole('button', { name: 'Gong', exact: true })
+  await effect.focus()
+  await page.keyboard.down('Space')
+  await expect(
+    page.getByRole('button', { name: 'Gong, looping' }),
+  ).toHaveAttribute('aria-pressed', 'true')
+  await page.keyboard.up('Space')
+  const looping = page.getByRole('button', { name: 'Gong, looping' })
+  await expect(looping).toHaveAttribute('aria-pressed', 'true')
+  await page.keyboard.press('Space')
+  await expect(effect).toHaveAttribute('aria-pressed', 'false')
 })

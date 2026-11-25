@@ -129,3 +129,26 @@ With 8 players that's about 40 per-player lines plus 10 to 15 fixed ones.
 7. Test on the actual tablet, speaker and phones before the weekend.
 
 Edit the flowchart however you like and send it back, and I'll build against exactly that.
+
+# Version 2: shared multiplayer game
+
+## Entry and shared game
+
+- Show an "I am..." landing screen with Host, TV, and Player options in the dashboard's existing visual style.
+- Keep the current dashboard as the host view. For now, the TV view uses the same layout.
+- Connect the host, TV, and players to one shared game. Only the TV displays the game code. The host and players join with that code.
+- Show each joined player, their connection state, and their game status in the host and TV views.
+
+## Player actions
+
+- Wait for other players to lock in their choices.
+- Cast a vote for a player at the round table.
+- During the night, traitors can choose one player to kill. The player with the most votes wins. Each traitor can choose only one player per night.
+- Look at the TV for mission instructions.
+- Make the player view mobile friendly, colorful, and clear about what to do next.
+
+## Recovery and delivery
+
+- A player who disconnects can reconnect and resume their existing game state.
+- Add end-to-end tests for the new behavior.
+- Follow `AGENTS.md`, update the glossary where needed, and push focused commits to a separate branch with a pull request.

@@ -33,8 +33,9 @@ const transitionFiles = {
   'Night falls': '/sounds/2482.wav',
 }
 
-function App() {
-  const [players, setPlayers] = useState(initialPlayers)
+function App({ multiplayer = null }) {
+  const [localPlayers, setPlayers] = useState(initialPlayers)
+  const players = multiplayer ? multiplayer.game.players : localPlayers
   const [modal, setModal] = useState(null)
   const [name, setName] = useState('')
   const [notice, setNotice] = useState('')
@@ -273,7 +274,19 @@ function App() {
     setName('')
     setModal(null)
   }
-  function eliminatePlayer(player, status) {
+  async function eliminatePlayer(player, status) {
+    if (multiplayer) {
+      try {
+        await multiplayer.command(
+          status === 'killed' ? 'kill' : 'banish',
+          player.id,
+        )
+        play(`${status === 'banished' ? 'Banish' : 'Kill'} ${player.name}`)
+      } catch (error) {
+        setNotice(error.message)
+      }
+      return
+    }
     setPlayers(
       players.map((p) => (p.name === player.name ? { ...p, status } : p)),
     )
@@ -338,6 +351,20 @@ function App() {
                   onPointerUp={cancelHold}
                   onPointerCancel={cancelHold}
                   onPointerLeave={cancelHold}
+                  onBlur={cancelHold}
+                  onKeyDown={(event) => {
+                    if (event.key === ' ' && !event.repeat) {
+                      event.preventDefault()
+                      startHold({ button: 0 }, label)
+                    }
+                  }}
+                  onKeyUp={(event) => {
+                    if (event.key === ' ') {
+                      event.preventDefault()
+                      cancelHold()
+                      clickEffect(label)
+                    }
+                  }}
                   onContextMenu={(event) => event.preventDefault()}
                   onClick={() => clickEffect(label)}
                 >
@@ -384,6 +411,20 @@ function App() {
                   onPointerUp={cancelHold}
                   onPointerCancel={cancelHold}
                   onPointerLeave={cancelHold}
+                  onBlur={cancelHold}
+                  onKeyDown={(event) => {
+                    if (event.key === ' ' && !event.repeat) {
+                      event.preventDefault()
+                      startHold({ button: 0 }, sound)
+                    }
+                  }}
+                  onKeyUp={(event) => {
+                    if (event.key === ' ') {
+                      event.preventDefault()
+                      cancelHold()
+                      clickEffect(sound)
+                    }
+                  }}
                   onContextMenu={(event) => event.preventDefault()}
                   onClick={() => clickEffect(sound)}
                 >
@@ -412,12 +453,16 @@ function App() {
         </>
       ) : (
         <>
-          <button
-            className="round-back add-player-top"
-            onClick={() => setModal('add')}
-          >
-            <Plus size={20} /> Add player
-          </button>
+          {multiplayer ? (
+            multiplayer.controls
+          ) : (
+            <button
+              className="round-back add-player-top"
+              onClick={() => setModal('add')}
+            >
+              <Plus size={20} /> Add player
+            </button>
+          )}
           <div className="home-content">
             <div className="controls">
               <button
@@ -456,6 +501,17 @@ function App() {
                     {player.name.charAt(0).toUpperCase()}
                   </span>
                   <span className="home-player-name">{player.name}</span>
+                  {multiplayer && (
+                    <small
+                      className={
+                        player.connected
+                          ? 'connection-online'
+                          : 'connection-offline'
+                      }
+                    >
+                      {player.connected ? 'Connected' : 'Disconnected'}
+                    </small>
+                  )}
                   <small className={`status-${player.status}`}>
                     {player.status === 'alive'
                       ? 'Alive'
