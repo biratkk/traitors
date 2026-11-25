@@ -26,7 +26,10 @@ begin
   if state->>'phase' <> 'mission' or (state->>'phaseEndsAt')::timestamptz < now() + interval '4 minutes 59 seconds' then raise exception 'Mission timer failed'; end if;
   perform public.game2_command(room_code, host_key, 'skip_mission');
   state := public.game2_state(room_code, 'tv', null, tv_key);
-  if state->>'phase' <> 'discussion' then raise exception 'Mission skip failed'; end if;
+  if state->>'phase' <> 'mission_complete' or state->>'phaseEndsAt' is not null then raise exception 'Mission skip did not pause'; end if;
+  perform public.game2_command(room_code, host_key, 'start_discussion');
+  state := public.game2_state(room_code, 'tv', null, tv_key);
+  if state->>'phase' <> 'discussion' or (state->>'phaseEndsAt')::timestamptz < now() + interval '4 minutes 59 seconds' then raise exception 'Discussion timer failed'; end if;
   update public.game_rooms set phase_ends_at = now() - interval '1 second' where id = test_room_id;
   state := public.game2_state(room_code, 'tv', null, tv_key);
   if state->>'phase' <> 'vote' then raise exception 'Discussion did not advance'; end if;
@@ -92,6 +95,13 @@ begin
   state := public.game2_state(room_code, 'tv', null, tv_key);
   if state->>'phase' <> 'morning' or state->>'selectedPlayer' <> 'Eve' then raise exception 'Morning announcement failed'; end if;
   if (select status from public.game_players where id = e) <> 'killed' then raise exception 'Victim not marked killed'; end if;
+  perform public.game2_command(room_code, host_key, 'start_mission');
+  update public.game_rooms set phase_ends_at = now() - interval '10 minutes' where id = test_room_id;
+  state := public.game2_state(room_code, 'tv', null, tv_key);
+  if state->>'phase' <> 'mission_complete' or state->>'phaseEndsAt' is not null then raise exception 'Expired mission did not pause'; end if;
+  perform public.game2_command(room_code, host_key, 'start_discussion');
+  state := public.game2_state(room_code, 'tv', null, tv_key);
+  if state->>'phase' <> 'discussion' or (state->>'phaseEndsAt')::timestamptz < now() + interval '4 minutes 59 seconds' then raise exception 'Discussion did not start from host action'; end if;
 end $$;
 
 do $$
@@ -114,6 +124,7 @@ begin
   perform public.game2_command(room_code, host_key, 'assign', '2');
   perform public.game2_command(room_code, host_key, 'start_mission');
   perform public.game2_command(room_code, host_key, 'skip_mission');
+  perform public.game2_command(room_code, host_key, 'start_discussion');
   update public.game_rooms set phase_ends_at = now() - interval '1 second' where id = test_room_id;
   perform public.game2_state(room_code, 'tv', null, tv_key);
   perform public.game2_vote(room_code, 'Alice', b);
