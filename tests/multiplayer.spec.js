@@ -127,11 +127,24 @@ test('TV, host and players share a game and recover their state', async ({
     await expect(tv.locator('.game-timer')).toBeVisible()
     await host.getByRole('button', { name: 'Skip mission' }).click()
     await expect(
+      tv.getByRole('heading', { name: 'Mission complete' }),
+    ).toBeVisible({ timeout: 15_000 })
+    await expect(tv.locator('.game-timer')).toHaveCount(0)
+    await expect(
+      players[0].page.getByText(
+        'The mission is complete. Wait for the host to start the round table.',
+      ),
+    ).toBeVisible({ timeout: 15_000 })
+    await host.getByRole('button', { name: 'Start round table' }).click()
+    await expect(
       tv.getByRole('heading', { name: 'The round table' }),
     ).toBeVisible({ timeout: 15_000 })
+    await expect(tv.locator('.game-timer')).toBeVisible()
     await expect(host.getByRole('button')).toHaveCount(0)
     await expect(tv.getByRole('button')).toHaveCount(0)
-    const disconnectedPlayer = players.find((player) => player.name !== traitors[0].name)
+    const disconnectedPlayer = players.find(
+      (player) => player.name !== traitors[0].name,
+    )
     await disconnectedPlayer.page.close()
     await expect(
       host.locator('.status-card').filter({ hasText: disconnectedPlayer.name }),

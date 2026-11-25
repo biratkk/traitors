@@ -276,3 +276,26 @@ test('host starts a night mix, plays the knife, fades it, and plays birds', asyn
     )
     .toBe(5)
 })
+
+test('host starts the round table after the mission', async ({ page }) => {
+  const state = baseState('mission_complete')
+  await mockGame(page, 'host', state, (method, body) => {
+    if (
+      method === 'game2_command' &&
+      body.command_input === 'start_discussion'
+    ) {
+      state.phase = 'discussion'
+      state.phaseEndsAt = new Date(Date.now() + 300_000).toISOString()
+    }
+  })
+  await expect(
+    page.getByRole('heading', { name: 'Mission complete' }),
+  ).toBeVisible()
+  await expect(page.locator('.game-timer')).toHaveCount(0)
+  await expect(page.getByRole('button')).toHaveCount(1)
+  await page.getByRole('button', { name: 'Start round table' }).click()
+  await expect(
+    page.getByRole('heading', { name: 'The round table' }),
+  ).toBeVisible()
+  await expect(page.locator('.game-timer')).toBeVisible()
+})

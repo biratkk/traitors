@@ -35,6 +35,11 @@ function phaseMessage(game) {
         title: 'Mission in progress',
         detail: 'Follow the host’s mission instructions.',
       }
+    case 'mission_complete':
+      return {
+        title: 'Mission complete',
+        detail: 'Wait for the host to start the round table.',
+      }
     case 'discussion':
       return {
         title: 'The round table',
@@ -203,6 +208,15 @@ export function HostView({ game, connection, command }) {
               Skip mission
             </button>
           )}
+          {game.phase === 'mission_complete' && (
+            <button
+              className="host-primary"
+              disabled={busy || connection !== 'connected'}
+              onClick={() => run('start_discussion')}
+            >
+              Start round table
+            </button>
+          )}
           {game.phase === 'revealed' && (
             <button
               className="host-primary night-start"
@@ -298,6 +312,9 @@ export function PlayerView({
         : 'You have been banished.'
   else if (game.phase === 'mission')
     instruction = 'Look at the TV for mission instructions.'
+  else if (game.phase === 'mission_complete')
+    instruction =
+      'The mission is complete. Wait for the host to start the round table.'
   else if (game.phase === 'discussion')
     instruction = 'Discuss who should be banished. Watch the TV for the timer.'
   else if (game.phase === 'defense')
