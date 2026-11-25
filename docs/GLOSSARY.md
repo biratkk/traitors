@@ -16,14 +16,17 @@ This glossary defines terms used in the dashboard and the game brief. Planned fe
 | Term | Meaning |
 | --- | --- |
 | Alive | A player who is still in the game. |
-| Kill | Mark a player as killed. Traitors choose a victim at night. |
+| Kill | Remove a player from the game. Traitors choose the victim together at night. |
 | Killed | The status of a player marked out through Kill. |
-| Banish | Mark a player as banished after an out-loud vote. |
+| Banish | Remove a player after a phone vote and a role reveal. |
 | Banished | The status of a player marked out through Banish. |
-| Round table | The discussion and out-loud vote where players choose someone to banish. |
+| Round table | A timed discussion followed by a phone vote to choose someone to banish. |
+| Defense | One minute for a tied player to speak before a revote. |
+| Revote | A new vote restricted to the players tied in the previous vote. |
+| Blindfold countdown | The 40 seconds after all traitors lock the same victim. The traitors put their blindfolds back on. |
 | Start of day | The sound played to begin the day. |
 | Night falls | The sound played to begin the night. |
-| Mission | A future game activity. The Missions view is currently empty. |
+| Mission | A five-minute phase for an activity. The host supplies the activity instructions. |
 | Finale | The planned end of the game after a win check. |
 
 ## App and audio

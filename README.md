@@ -36,12 +36,15 @@ GitHub Actions runs lint and tests on pushes and pull requests. Multiplayer test
 
 1. On the TV, choose TV and create a game. The TV displays the room code.
 2. On the host device, choose Host and join with the code. Players choose Player and join with the code and their names.
-3. The host assigns roles, starts a vote or a night, and uses Banish to record the round-table result.
-4. Players cast one locked choice in each vote. If a night vote ties, the host chooses among the tied players.
-5. Open Sounds. Tap an effect to play it once. Hold it until the bar fills to loop it.
-6. Tap a playing effect to fade it out. Use Stop all to stop every sound immediately.
+3. The host assigns roles and starts a mission. Players can show or hide their roles on their phones.
+4. The mission lasts five minutes. The host can skip it. The round-table discussion then lasts five minutes.
+5. Players vote on their phones. If the vote ties, each tied player gets one minute to speak, followed by a revote. Further ties repeat this process.
+6. The chosen player stands and reads a private prompt on their phone. They reveal their role on the TV when ready.
+7. Connect the host device to the speaker and choose "Let the night begin". Everyone puts on a blindfold. Once everyone is covered, traitors can uncover their eyes.
+8. The traitors choose the same victim and lock in. They have 40 seconds to replace their blindfolds. The TV then announces the victim.
+9. Start the next mission.
 
-You can play several effects at the same time. Connect the tablet to a speaker through its Bluetooth settings. The app serves its sound files from the same site.
+The host device plays the night sound mix, the knife sound, and the morning birds. Keep the host device awake and connected to the speaker. Browser and device audio settings can affect playback.
 
 ## Install on a tablet
 
@@ -53,8 +56,11 @@ Open the installed app once while online to cache the dashboard. The browser cac
 
 | Path | Purpose |
 | --- | --- |
-| `src/App.jsx` | Views, player state, audio playback, and touch controls |
-| `src/App.css` | Dashboard layout and styles |
+| `src/Multiplayer.jsx` | Session entry, reconnect handling, and server requests |
+| `src/GameViews.jsx` | Host, TV, and player screens |
+| `src/useNightAudio.js` | Night sound mix and transitions |
+| `src/App.jsx` | Legacy dashboard used by the v1 test build |
+| `src/App.css` and `src/multiplayer.css` | Layout and styles |
 | `src/sounds.json` | Sound effect labels and file paths |
 | `public/sounds/` | Bundled audio and source credits |
 | `tests/` | End-to-end tests |
@@ -67,9 +73,9 @@ The app uses React, Vite, and Lucide icons. Sound effects come from Mixkit. See 
 
 Game state is stored in Supabase. A player can reconnect with the room code and name. Anyone who knows both can impersonate that player and see their role. Use this only with people you trust. The host session is saved on its device. If the host clears its browser data, it cannot reclaim that host session.
 
-The app checks for updates every two seconds. Night choices lock after one vote per traitor. A tied night vote goes to the host or TV to resolve. Game sessions have no automatic expiration yet.
+The app checks for updates every two seconds. Timed phases advance when a device next requests game state. Night choices require unanimous agreement. There is no night timeout. Game sessions have no automatic expiration yet.
 
-Kill and banishment narration uses a placeholder tone. The Missions view is empty. Automatic win checks, role reveal cards, and a night timer are not implemented. See `docs/GOAL.md` for the original brief.
+Mission content and automatic win checks are not implemented. Banishment uses a written prompt rather than recorded narration. The TV morning announcement is written text. See `docs/GOAL.md` for the original brief.
 
 ## Version 2 development
 
