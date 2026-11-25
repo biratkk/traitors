@@ -93,3 +93,46 @@ begin
   if state->>'phase' <> 'morning' or state->>'selectedPlayer' <> 'Eve' then raise exception 'Morning announcement failed'; end if;
   if (select status from public.game_players where id = e) <> 'killed' then raise exception 'Victim not marked killed'; end if;
 end $$;
+
+do $$
+declare
+  room jsonb; host jsonb; state jsonb; room_code text; host_key text; tv_key text; test_room_id uuid;
+  a uuid; b uuid; e uuid; first_defender text; second_defender text;
+begin
+  room := public.game_create(); room_code := room->>'code'; tv_key := room->>'token';
+  host := public.game_join(room_code, 'host'); host_key := host->>'token';
+  perform public.game_join(room_code, 'player', 'Alice');
+  perform public.game_join(room_code, 'player', 'Bob');
+  perform public.game_join(room_code, 'player', 'Charlie');
+  perform public.game_join(room_code, 'player', 'Dana');
+  perform public.game_join(room_code, 'player', 'Eve');
+  perform public.game_join(room_code, 'player', 'Frank');
+  select id into test_room_id from public.game_rooms where code = room_code;
+  select id into a from public.game_players where room_id = test_room_id and name = 'Alice';
+  select id into b from public.game_players where room_id = test_room_id and name = 'Bob';
+  select id into e from public.game_players where room_id = test_room_id and name = 'Eve';
+  perform public.game2_command(room_code, host_key, 'assign', '2');
+  perform public.game2_command(room_code, host_key, 'start_mission');
+  perform public.game2_command(room_code, host_key, 'skip_mission');
+  update public.game_rooms set phase_ends_at = now() - interval '1 second' where id = test_room_id;
+  perform public.game2_state(room_code, 'tv', null, tv_key);
+  perform public.game2_vote(room_code, 'Alice', b);
+  perform public.game2_vote(room_code, 'Bob', a);
+  perform public.game2_vote(room_code, 'Charlie', b);
+  perform public.game2_vote(room_code, 'Dana', e);
+  perform public.game2_vote(room_code, 'Eve', a);
+  perform public.game2_vote(room_code, 'Frank', e);
+  state := public.game2_state(room_code, 'tv', null, tv_key);
+  if state->>'phase' <> 'defense' or jsonb_array_length(state->'candidates') <> 3 or state->>'defender' not in ('Alice', 'Bob', 'Eve') then raise exception 'Three-way tie did not start first defense'; end if;
+  first_defender := state->>'defender';
+  update public.game_rooms set phase_ends_at = now() - interval '1 second' where id = test_room_id;
+  state := public.game2_state(room_code, 'tv', null, tv_key);
+  if state->>'phase' <> 'defense' or state->>'defender' not in ('Alice', 'Bob', 'Eve') or state->>'defender' = first_defender then raise exception 'Second defense failed'; end if;
+  second_defender := state->>'defender';
+  update public.game_rooms set phase_ends_at = now() - interval '1 second' where id = test_room_id;
+  state := public.game2_state(room_code, 'tv', null, tv_key);
+  if state->>'phase' <> 'defense' or state->>'defender' not in ('Alice', 'Bob', 'Eve') or state->>'defender' in (first_defender, second_defender) then raise exception 'Third defense failed'; end if;
+  update public.game_rooms set phase_ends_at = now() - interval '1 second' where id = test_room_id;
+  state := public.game2_state(room_code, 'tv', null, tv_key);
+  if state->>'phase' <> 'revote' or jsonb_array_length(state->'candidates') <> 3 then raise exception 'Three-way revote failed'; end if;
+end $$;
