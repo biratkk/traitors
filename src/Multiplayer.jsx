@@ -225,6 +225,14 @@ function GameControls({ session, game, connection, command, leave }) {
 function PlayerView({ game, connection, vote, leave }) {
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [roleVisible, setRoleVisible] = useState(false)
+  useEffect(() => {
+    function hideRole() {
+      if (document.hidden) setRoleVisible(false)
+    }
+    document.addEventListener('visibilitychange', hideRole)
+    return () => document.removeEventListener('visibilitychange', hideRole)
+  }, [])
   const self = game.self
   const isNightTraitor = game.phase === 'night' && self.role === 'traitor'
   const canVote =
@@ -282,9 +290,18 @@ function PlayerView({ game, connection, vote, leave }) {
         <h1>{self.name}</h1>
         <p>Status: {self.status}</p>
         {self.role && (
+          <button
+            className="role-toggle"
+            onClick={() => setRoleVisible((visible) => !visible)}
+            aria-expanded={roleVisible}
+          >
+            {roleVisible ? 'Hide my role' : 'Show my role'}
+          </button>
+        )}
+        {self.role && roleVisible && (
           <p>Your role: {self.role === 'traitor' ? 'Traitor' : 'Faithful'}</p>
         )}
-        {self.role === 'traitor' && game.fellowTraitors.length > 0 && (
+        {roleVisible && self.role === 'traitor' && game.fellowTraitors.length > 0 && (
           <p>Other traitors: {game.fellowTraitors.join(', ')}</p>
         )}
       </div>

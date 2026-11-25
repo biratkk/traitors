@@ -63,6 +63,7 @@ test('TV, host, and players share a game and recover their state', async ({
     const traitors = []
     const faithfuls = []
     for (const player of players) {
+      await player.page.getByRole('button', { name: 'Show my role' }).click({ timeout: 15_000 })
       await expect(player.page.getByText(/Your role:/)).toBeVisible({
         timeout: 15_000,
       })
@@ -72,7 +73,12 @@ test('TV, host, and players share a game and recover their state', async ({
     expect(traitors).toHaveLength(2)
     expect(faithfuls).toHaveLength(2)
     await expect(host.getByText(/Your role:/)).toHaveCount(0)
+    await traitors[0].page.getByRole('button', { name: 'Hide my role' }).click()
+    await expect(traitors[0].page.getByText(/Your role:/)).toHaveCount(0)
+    await traitors[0].page.getByRole('button', { name: 'Show my role' }).click()
     await traitors[0].page.reload()
+    await expect(traitors[0].page.getByText(/Your role:/)).toHaveCount(0)
+    await traitors[0].page.getByRole('button', { name: 'Show my role' }).click({ timeout: 15_000 })
     await expect(traitors[0].page.getByText('Your role: Traitor')).toBeVisible({
       timeout: 15_000,
     })
